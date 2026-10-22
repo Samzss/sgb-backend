@@ -1,0 +1,5 @@
+Django>=5.1,<5.3
+djangorestframework>=3.15
+pymongo>=4.8
+gunicorn>=22.0
+mongomock>=4.1  # solo para tests

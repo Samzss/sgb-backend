@@ -1,0 +1,38 @@
+# Backend del SGB: gateway + 2 microservicios + MongoDB (Supabase es externo).
+# Uso:  cp .env.example .env  (poner DATABASE_URL de Supabase)  ->  docker compose up --build
+services:
+  gateway:
+    image: nginx:1.27-alpine
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8080:80"
+    depends_on:
+      - catalog-service
+      - loans-service
+
+  catalog-service:
+    build: ./catalog-service
+    environment:
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017}
+    depends_on:
+      - mongo
+
+  loans-service:
+    build: ./loans-service
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?Define DATABASE_URL en .env}
+      CATALOG_URL: http://catalog-service:8000
+
+  mongo:
+    image: mongo:7
+    volumes:
+      - mongo-data:/data/db
+    ports:
+      - "27017:27017"
+
+volumes:
+  mongo-data:
